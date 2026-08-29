@@ -1,0 +1,114 @@
+// Prisma schema — ARCHITECTURE.md 데이터 모델과 TRD §5 무결성 규칙을 반영한다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum StudySlot {
+  YAJA1
+  YAJA2
+  SIMJA
+}
+
+enum AttState {
+  UNCHECKED
+  PRESENT
+  LATE
+  LEAVE_EARLY
+  ABSENT
+  EXCUSED
+}
+
+enum AbsenceCategory {
+  PERSONAL
+  OFFICIAL
+  OTHER
+}
+
+enum CalendarReason {
+  HOLIDAY
+  EXAM
+  OTHER
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  studentNo String   @unique
+  name      String
+  classroom String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  plans ParticipationPlan[]
+}
+
+model SlotConfig {
+  id                    String    @id @default(cuid())
+  slot                  StudySlot @unique
+  startTime             String
+  endTime               String
+  lateThresholdMinutes  Int?
+  active                Boolean   @default(true)
+}
+
+model CalendarException {
+  id     String         @id @default(cuid())
+  date   DateTime       @unique
+  reason CalendarReason
+  memo   String?
+}
+
+model ImportBatch {
+  id         String   @id @default(cuid())
+  fileName   String
+  importedAt DateTime @default(now())
+  rowCount   Int
+  errorCount Int
+  actor      String
+
+  plans ParticipationPlan[]
+}
+
+model ParticipationPlan {
+  id             String    @id @default(cuid())
+  studentId      String
+  date           DateTime
+  slot           StudySlot
+  importBatchId  String
+  createdAt      DateTime  @default(now())
+
+  student     Student     @relation(fields: [studentId], references: [id])
+  importBatch ImportBatch @relation(fields: [importBatchId], references: [id])
+  attendance  Attendance?
+
+  @@unique([studentId, date, slot])
+  @@index([date, slot])
+}
+
+model Attendance {
+  id                  String           @id @default(cuid())
+  participationPlanId String           @unique
+  checkInAt           DateTime?
+  checkOutAt          DateTime?
+  state               AttState         @default(UNCHECKED)
+  absenceCategory     AbsenceCategory?
+  absenceNote         String?
+  updatedAt           DateTime         @updatedAt
+
+  plan ParticipationPlan @relation(fields: [participationPlanId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      String
+  action     String
+  targetType String
+  targetId   String
+  at         DateTime @default(now())
+  meta       String?
+}
