@@ -19,7 +19,7 @@ export default function TeacherLayout({
       <header className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-6 sm:py-3">
           <Link
-            href={"/" as Route}
+            href={"/teacher/attendance" as Route}
             className="text-base font-semibold text-slate-900 sm:text-sm"
           >
             야자·심자 관리
