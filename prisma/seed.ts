@@ -4,14 +4,14 @@ const prisma = new PrismaClient();
 
 async function main() {
   const defaults: Array<{
-    slot: "YAJA1" | "YAJA2" | "SIMJA";
+    slot: "OJA" | "YAJA" | "SIMJA";
     startTime: string;
     endTime: string;
     lateThresholdMinutes: number | null;
   }> = [
-    { slot: "YAJA1", startTime: "19:00", endTime: "20:30", lateThresholdMinutes: 10 },
-    { slot: "YAJA2", startTime: "20:40", endTime: "22:00", lateThresholdMinutes: 10 },
-    { slot: "SIMJA", startTime: "22:10", endTime: "23:30", lateThresholdMinutes: 10 },
+    { slot: "OJA", startTime: "07:40", endTime: "08:20", lateThresholdMinutes: 10 },
+    { slot: "YAJA", startTime: "19:00", endTime: "21:00", lateThresholdMinutes: 10 },
+    { slot: "SIMJA", startTime: "21:10", endTime: "22:40", lateThresholdMinutes: 10 },
   ];
 
   for (const s of defaults) {

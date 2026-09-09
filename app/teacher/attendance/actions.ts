@@ -4,10 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { classifyCheckIn, classifyCheckOut } from "@/lib/attendance-logic";
-import { parseKstDateString } from "@/lib/date";
 import type { StudySlot } from "@prisma/client";
 
-const SlotEnum = z.enum(["YAJA1", "YAJA2", "SIMJA"]);
+const SlotEnum = z.enum(["OJA", "YAJA", "SIMJA"]);
 
 const CheckInSchema = z.object({
   planId: z.string().min(1),

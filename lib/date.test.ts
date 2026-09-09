@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   formatKstDate,
   formatKstTime,
+  isoAddDays,
   kstDateFromParts,
   kstTodayString,
+  kstWeekMonday,
+  kstWeekdayDates,
   parseKstDateString,
 } from "./date";
 
@@ -53,5 +56,33 @@ describe("date utils — KST (NF-6, AC-6.1)", () => {
     expect(() => kstDateFromParts("2026-08-28", "25:00")).toThrow();
     expect(() => kstDateFromParts("2026-08-28", "20:60")).toThrow();
     expect(() => kstDateFromParts("2026-08-28", "20-05")).toThrow();
+  });
+});
+
+describe("주간 날짜 유틸 — 월요일 계산", () => {
+  it("isoAddDays: 월 경계를 넘겨 날짜를 더한다", () => {
+    expect(isoAddDays("2026-08-31", 4)).toBe("2026-09-04");
+    expect(isoAddDays("2026-09-01", -1)).toBe("2026-08-31");
+  });
+
+  it("kstWeekMonday: 주중 어느 날이든 그 주 월요일을 돌려준다", () => {
+    // 2026-09-02(수) → 2026-08-31(월)
+    expect(kstWeekMonday("2026-09-02")).toBe("2026-08-31");
+    // 월요일은 자기 자신
+    expect(kstWeekMonday("2026-08-31")).toBe("2026-08-31");
+    // 일요일은 그 주(직전) 월요일
+    expect(kstWeekMonday("2026-09-06")).toBe("2026-08-31");
+    // 다음 월요일
+    expect(kstWeekMonday("2026-09-07")).toBe("2026-09-07");
+  });
+
+  it("kstWeekdayDates: 월요일 기준 월~금 5일을 돌려준다", () => {
+    expect(kstWeekdayDates("2026-08-31")).toEqual([
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+    ]);
   });
 });

@@ -84,12 +84,13 @@
 
 ## 데이터 모델 (Prisma)
 ```prisma
-enum StudySlot { YAJA1 YAJA2 SIMJA }
+enum StudySlot { OJA YAJA SIMJA }
 enum AttState  { PRESENT LATE LEAVE_EARLY ABSENT EXCUSED }
 enum AbsenceCategory { PERSONAL OFFICIAL OTHER }
 enum CalendarReason  { HOLIDAY EXAM OTHER }
 ```
-- **Student**: id, studentNo(unique), name, classroom, active, createdAt.
+- **Student**: id, studentNo(unique), name, classroom, active, createdAt, contact?, surveySubmittedAt?, surveyUpdatedAt?.
+  - 뒤 세 필드는 교사용 내부 상세 전용. 결과 Excel·CSV·감사 로그·외부 공유에서 제외한다.
 - **SlotConfig**: id, slot(StudySlot, unique), startTime, endTime, lateThresholdMinutes?, active.
 - **CalendarException**: id, date(unique), reason(CalendarReason), memo?.
 - **ParticipationPlan**: id, studentId, date, slot, importBatchId, createdAt.
@@ -101,12 +102,14 @@ enum CalendarReason  { HOLIDAY EXAM OTHER }
 - **AuditLog**: id, actor, action, targetType, targetId, at, meta(JSON).
 
 저장 대상이 아닌 항목(스키마에 두지 않음):
-- 학생/보호자 연락처, 이메일, 주민번호.
+- 보호자 연락처, 이메일, 주민번호.
 - 상담 내용, 건강·질병 정보, 증빙 이미지.
+
+교사용 내부 상세로만 저장(결과 Excel·CSV·감사 로그·외부 공유 제외): 학생 연락처, 설문 제출/수정시간.
 
 ## Excel 연동 규칙
 - MVP의 기준 흐름은 `Excel 업로드 → 날짜별 출결 대상 생성 → 앱에서 체크 → 결과 Excel 다운로드`.
-- 기본 Excel 열은 `학번`, `이름`, `반`, `날짜`, `구분`이며 `구분` 값은 `야자1`, `야자2`, `심자`를 사용한다.
+- 기본 Excel 열은 `학번`, `이름`, `반`, `날짜`, `구분`이며 `구분` 값은 `오자`, `야자`, `심자`를 사용한다. 설문 원본(제출내역/제출내역_텍스트) 형식도 기준 월요일과 함께 직접 업로드할 수 있다.
 - 필수 열이 없거나 날짜·구분 값이 올바르지 않은 행은 저장하지 않고 행 번호와 오류 사유를 보여준다.
 - 동일 학생·날짜·슬롯 행은 중복으로 처리하고 하나만 저장한다.
 - 결과 Excel에는 원본 식별 정보와 출결 상태, 입실 시각, 퇴실 시각, 불참 사유를 포함한다.
@@ -168,7 +171,7 @@ enum CalendarReason  { HOLIDAY EXAM OTHER }
 - **MVP 운영 모델**: 학교 공식 출결을 대체하지 않는 야자 운영 보조 도구. 교사 휴대폰이 주 기기이며 학교 내부망의 상시 서버에 접속한다. 최종 플랫폼은 보류.
 - **MVP 입력 모델**: 선생님들이 작성한 Excel을 업로드해 학생·날짜·슬롯별 `ParticipationPlan`을 생성하고, 출결 결과가 포함된 Excel을 다운로드.
 - **MVP 출결 모델**: Excel에 등록된 학생만 출결 대상에 포함. 미체크는 결석으로 자동 확정하지 않으며, 교사가 최종 상태를 기록.
-- **MVP 데이터 정책**: 연락처·건강정보를 저장하지 않음. 불참 사유는 제한된 길이의 교사 입력으로 저장하되 민감한 상세 내용을 입력하지 않는다. 데이터는 학년도 단위 보관을 임시 기준으로 두고 학교 기준 확정 후 갱신.
+- **MVP 데이터 정책**: 건강정보·증빙자료·보호자 연락처를 저장하지 않음. 학생 연락처와 설문 제출/수정시간은 교사용 내부 상세로만 저장하고 결과 Excel·CSV·감사 로그·외부 공유에서 제외한다. 불참 사유는 제한된 길이의 교사 입력으로 저장하되 민감한 상세 내용을 입력하지 않는다. 데이터는 학년도 단위 보관을 임시 기준으로 두고 학교 기준 확정 후 갱신.
 - **후속 확장**: 교외 접속, 학생 신청, 교사별 계정·역할, 푸시·QR, 카카오 알림톡, 좌석·다중 반, NEIS 연동. 플랫폼 결정 후 PWA 또는 Android 배포를 진행한다.
 
 ## Excel 재업로드 정책

@@ -3,12 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import type { StudySlot } from "@prisma/client";
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const SlotFormSchema = z.object({
-  slot: z.enum(["YAJA1", "YAJA2", "SIMJA"]),
+  slot: z.enum(["OJA", "YAJA", "SIMJA"]),
   startTime: z.string().regex(TIME_RE, "HH:mm 형식이어야 합니다."),
   endTime: z.string().regex(TIME_RE, "HH:mm 형식이어야 합니다."),
   lateThresholdMinutes: z

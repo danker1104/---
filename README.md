@@ -41,9 +41,9 @@ flowchart LR
 
 현재 저장소는 기획 문서 중심 단계입니다. 구현을 시작할 때 다음 문서를 먼저 확인합니다.
 
-1. [IDEATION.md](./IDEATION.md): 제품 배경, 목표, 범위, 운영 원칙
-2. [ARCHITECTURE.md](./ARCHITECTURE.md): 권장 개발 언어·스택·운영 구조
-3. [PRD.md](./PRD.md): 기능 요구사항, 인수조건, 테스트 시나리오
+1. [IDEATION.md](./docs/IDEATION.md): 제품 배경, 목표, 범위, 운영 원칙
+2. [ARCHITECTURE.md](./docs/ARCHITECTURE.md): 권장 개발 언어·스택·운영 구조
+3. [PRD.md](./docs/PRD.md): 기능 요구사항, 인수조건, 테스트 시나리오
 
 구현은 최신 PRD의 범위와 인수조건을 확인한 뒤 별도 합의 후 시작합니다.
 
@@ -100,7 +100,7 @@ Azure 배포 절차는 최종 플랫폼과 학교의 개인정보·보안 정책
 
 ## 애플리케이션 테스트하기
 
-테스트 범위는 [PRD.md](./PRD.md)의 인수조건과 테스트 시나리오를 기준으로 합니다.
+테스트 범위는 [PRD.md](./docs/PRD.md)의 인수조건과 테스트 시나리오를 기준으로 합니다.
 
 ### 단위 테스트
 

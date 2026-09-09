@@ -1,4 +1,4 @@
-// Prisma schema — ARCHITECTURE.md 데이터 모델과 TRD §5 무결성 규칙을 반영한다.
+// Prisma schema — docs/ARCHITECTURE.md 데이터 모델과 TRD §5 무결성 규칙을 반영한다.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,8 +10,8 @@ datasource db {
 }
 
 enum StudySlot {
-  YAJA1
-  YAJA2
+  OJA
+  YAJA
   SIMJA
 }
 
@@ -43,6 +43,11 @@ model Student {
   classroom String
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
+
+  // 교사용 내부 상세(TRD §5.1). 결과 Excel·CSV·감사 로그·외부 공유에는 포함하지 않는다.
+  contact           String?
+  surveySubmittedAt String?
+  surveyUpdatedAt   String?
 
   plans ParticipationPlan[]
 }

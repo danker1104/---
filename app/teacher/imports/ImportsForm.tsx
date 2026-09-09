@@ -32,7 +32,13 @@ export function ImportsForm() {
           Excel 파일 (.xlsx)
         </label>
         <p className="mt-1 text-xs text-slate-500">
-          필수 열: 학번, 이름, 반, 날짜(YYYY-MM-DD), 구분(야자1/야자2/심자)
+          단순 양식 열: 학번, 이름, 반, 날짜(YYYY-MM-DD), 구분(오자/야자/심자)
+        </p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          또는 설문 원본(제출내역/제출내역_텍스트)을 그대로 업로드할 수 있습니다. 기준 월요일을 비우면 이번 주 월요일로 자동 적용됩니다.
+        </p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          내려받은 주간 출결표에 표시(출·지·조·결·인)를 채워 다시 올리면 그 출결이 주간 출결표에 그대로 반영됩니다.
         </p>
         <input
           type="file"
@@ -40,6 +46,14 @@ export function ImportsForm() {
           accept=".xlsx,.xls"
           required
           className="mt-2 block w-full min-h-[40px] text-sm file:mr-3 file:min-h-[36px] file:rounded file:border-0 file:bg-slate-900 file:px-3 file:text-white"
+        />
+        <label className="mt-3 block text-sm font-medium text-slate-800">
+          기준 월요일 <span className="font-normal text-slate-500">(설문 업로드 시, 비우면 이번 주 자동)</span>
+        </label>
+        <input
+          type="date"
+          name="weekMonday"
+          className="mt-1 block w-full min-h-[40px] rounded border border-slate-300 px-2 text-sm sm:w-auto"
         />
         <button
           type="submit"
@@ -56,7 +70,7 @@ export function ImportsForm() {
       {result && result.ok && (
         <div className="rounded-md border bg-white p-4 shadow-sm">
           <h3 className="text-sm font-semibold">업로드 결과</h3>
-          <dl className="mt-2 grid grid-cols-2 gap-2 text-sm text-slate-700 sm:grid-cols-3 lg:grid-cols-6">
+          <dl className="mt-2 grid grid-cols-2 gap-2 text-sm text-slate-700 sm:grid-cols-3 lg:grid-cols-8">
             <div>
               <dt className="text-slate-500">전체 행</dt>
               <dd className="font-medium">{result.totalRows}</dd>
@@ -68,6 +82,14 @@ export function ImportsForm() {
             <div>
               <dt className="text-slate-500">신규 생성</dt>
               <dd className="font-medium text-emerald-700">{result.createdRows}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">기존 갱신</dt>
+              <dd className="font-medium text-sky-700">{result.updatedRows}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">이전 제거</dt>
+              <dd className="font-medium text-red-700">{result.removedRows}</dd>
             </div>
             <div>
               <dt className="text-slate-500">기존 유지</dt>

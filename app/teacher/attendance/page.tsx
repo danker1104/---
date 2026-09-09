@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { StudySlot } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { kstTodayString, parseKstDateString } from "@/lib/date";
+import { kstTodayString, kstWeekMonday, parseKstDateString } from "@/lib/date";
 import { SLOT_LABEL, SLOT_ORDER } from "@/lib/slot";
 import { AttendanceTable, type AttendanceRow } from "./AttendanceTable";
 
@@ -13,7 +13,7 @@ interface SearchParams {
   slot?: string;
 }
 
-const SLOTS = new Set<StudySlot>(["YAJA1", "YAJA2", "SIMJA"]);
+const SLOTS = new Set<StudySlot>(["OJA", "YAJA", "SIMJA"]);
 
 export default async function AttendancePage({
   searchParams,
@@ -27,9 +27,10 @@ export default async function AttendancePage({
     : today;
   const slot: StudySlot = SLOTS.has(params.slot as StudySlot)
     ? (params.slot as StudySlot)
-    : "YAJA1";
+    : "OJA";
 
   const dateUtc = parseKstDateString(date);
+  const weekMonday = kstWeekMonday(date);
   const plans = await prisma.participationPlan.findMany({
     where: { date: dateUtc, slot },
     include: { student: true, attendance: true },
@@ -56,8 +57,29 @@ export default async function AttendancePage({
 
   return (
     <div className="space-y-4">
+      {/* 상단 탭 */}
+      <div className="flex border-b border-slate-200">
+        <Link
+          href={`/teacher/attendance/week?monday=${weekMonday}` as Route}
+          className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800"
+        >
+          주간 출결 (엑셀 양식)
+        </Link>
+        <Link
+          href={`/teacher/attendance?date=${date}&slot=${slot}` as Route}
+          className="border-b-2 border-slate-900 px-4 py-2 text-sm font-bold text-slate-900"
+        >
+          일일 출결 (상세)
+        </Link>
+      </div>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold">일일 출결 체크</h1>
+        <div>
+          <h1 className="text-xl font-semibold">일일 출결 체크</h1>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {date} · {SLOT_LABEL[slot]} (신청 {rows.length}명) · 전체 학생 주간 표는 [주간 출결 (엑셀 양식)] 탭을 확인하세요.
+          </p>
+        </div>
         <form className="flex flex-wrap items-center gap-2 text-sm" method="get">
           <label htmlFor="date" className="text-slate-600">날짜</label>
           <input

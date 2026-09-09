@@ -1,6 +1,6 @@
 import { kstDateFromParts } from "./date";
 
-export type StudySlot = "YAJA1" | "YAJA2" | "SIMJA";
+export type StudySlot = "OJA" | "YAJA" | "SIMJA";
 
 export interface SlotWindow {
   slot: StudySlot;

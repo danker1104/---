@@ -1,12 +1,12 @@
 import type { StudySlot, AttState, CalendarReason } from "@prisma/client";
 
 export const SLOT_LABEL: Record<StudySlot, string> = {
-  YAJA1: "야자1",
-  YAJA2: "야자2",
+  OJA: "오자",
+  YAJA: "야자",
   SIMJA: "심자",
 };
 
-export const SLOT_ORDER: readonly StudySlot[] = ["YAJA1", "YAJA2", "SIMJA"];
+export const SLOT_ORDER: readonly StudySlot[] = ["OJA", "YAJA", "SIMJA"];
 
 export const STATE_LABEL: Record<AttState, string> = {
   UNCHECKED: "미체크",
@@ -24,8 +24,8 @@ export const CALENDAR_REASON_LABEL: Record<CalendarReason, string> = {
 };
 
 const KOR_TO_SLOT: Record<string, StudySlot> = {
-  "야자1": "YAJA1",
-  "야자2": "YAJA2",
+  "오자": "OJA",
+  "야자": "YAJA",
   "심자": "SIMJA",
 };
 

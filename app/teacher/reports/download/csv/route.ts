@@ -3,7 +3,7 @@ import { loadReport, type ReportFilter } from "../../report-data";
 import type { StudySlot } from "@prisma/client";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const SLOTS: ReadonlySet<StudySlot> = new Set(["YAJA1", "YAJA2", "SIMJA"]);
+const SLOTS: ReadonlySet<StudySlot> = new Set(["OJA", "YAJA", "SIMJA"]);
 
 function readFilter(url: URL): ReportFilter | null {
   const from = url.searchParams.get("from");

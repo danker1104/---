@@ -15,10 +15,10 @@ import { SLOT_LABEL } from "@/lib/slot";
 import type { SlotSeriesPoint } from "./report-data";
 import type { StudySlot } from "@prisma/client";
 
-const SLOTS: StudySlot[] = ["YAJA1", "YAJA2", "SIMJA"];
+const SLOTS: StudySlot[] = ["OJA", "YAJA", "SIMJA"];
 const COLORS: Record<StudySlot, string> = {
-  YAJA1: "#0f766e",
-  YAJA2: "#b45309",
+  OJA: "#0f766e",
+  YAJA: "#b45309",
   SIMJA: "#1d4ed8",
 };
 

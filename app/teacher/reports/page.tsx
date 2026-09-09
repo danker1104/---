@@ -9,7 +9,7 @@ import type { StudySlot } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const SLOTS = new Set<StudySlot>(["YAJA1", "YAJA2", "SIMJA"]);
+const SLOTS = new Set<StudySlot>(["OJA", "YAJA", "SIMJA"]);
 
 function defaultRange(): { from: string; to: string } {
   const today = kstTodayString();

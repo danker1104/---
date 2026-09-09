@@ -250,7 +250,7 @@ export function AttendanceTable({ date, slot, rows }: Props) {
       </div>
 
       {absenceFor && (
-        <div className="sticky bottom-3 rounded-md border bg-white p-4 shadow-lg">
+        <div className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] rounded-md border bg-white p-4 shadow-lg">
           <h3 className="text-sm font-semibold">
             불참 사유 입력 — {absenceFor.name} ({absenceFor.studentNo})
           </h3>
