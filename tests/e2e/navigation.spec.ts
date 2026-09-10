@@ -7,6 +7,7 @@ const PAGES: Array<{ path: string; text: string | RegExp }> = [
   { path: "/teacher/slots", text: "야자" },
   { path: "/teacher/calendar", text: "등록/갱신" },
   { path: "/teacher/reports", text: "리포트" },
+  { path: "/teacher/logs", text: "운영 기록" },
 ];
 
 for (const p of PAGES) {

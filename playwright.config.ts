@@ -19,6 +19,16 @@ export default defineConfig({
       name: "mobile-chrome",
       use: { ...devices["Pixel 5"] },
     },
+    {
+      // 삼성 갤럭시 계열(Android Chrome) 호환성 확인용
+      name: "mobile-galaxy",
+      use: { ...devices["Galaxy S9+"] },
+    },
+    {
+      // 아이폰(Safari/WebKit) 호환성 확인용
+      name: "mobile-iphone",
+      use: { ...devices["iPhone 13"] },
+    },
   ],
   webServer: process.env.E2E_SKIP_WEBSERVER
     ? undefined

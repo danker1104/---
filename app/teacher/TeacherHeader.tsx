@@ -13,6 +13,7 @@ const NAV: Array<{ href: Route; label: string }> = [
   { href: "/teacher/reports", label: "리포트" },
   { href: "/teacher/slots", label: "슬롯 설정" },
   { href: "/teacher/calendar", label: "캘린더 예외" },
+  { href: "/teacher/logs", label: "운영 기록" },
 ];
 
 export function TeacherHeader() {
