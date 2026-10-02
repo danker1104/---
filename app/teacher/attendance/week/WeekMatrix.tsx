@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from "react";
 import type { AttState } from "@prisma/client";
-import { SLOT_LABEL, SLOT_ORDER, STATE_LABEL } from "@/lib/slot";
+import { SLOT_LABEL, SLOT_ORDER } from "@/lib/slot";
 import {
   WEEKDAY_LABELS,
-  attendanceMark,
   type WeekRow,
 } from "@/lib/weekly-attendance";
-import { cycleCellAction } from "./actions";
+import { setCellStateAction } from "./actions";
 import { StudentDetailDialog } from "./StudentDetailDialog";
+import { AttendanceStatePicker } from "./AttendanceStatePicker";
 
 const CELL_STYLE: Record<AttState, string> = {
   UNCHECKED: "bg-white text-slate-300 hover:bg-slate-100",
@@ -125,41 +125,38 @@ export function WeekMatrix({ dates, rows }: Props) {
                           key={`${slot}-${i}`}
                           className={`p-0 text-center ${leftBorder}`}
                         >
-                          <button
-                            type="button"
+                          <AttendanceStatePicker
+                            currentState={null}
                             disabled={pending}
-                            onClick={() =>
+                            accessibleLabel={`${row.name} · ${SLOT_LABEL[slot]} ${wd}요일 출결`}
+                            onSelect={(state) =>
                               startTransition(async () => {
-                                await cycleCellAction({
+                                await setCellStateAction({
                                   studentNo: row.studentNo,
                                   date,
                                   slot,
+                                  state,
                                 });
                               })
                             }
-                            title={`${row.name} · ${SLOT_LABEL[slot]} ${wd} (미신청 — 클릭 시 출석 등록)`}
-                            className="min-h-[36px] w-9 text-xs text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
-                          >
-                            +
-                          </button>
+                            buttonClassName="min-h-[36px] w-9 text-xs text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
+                          />
                         </td>
                       );
                     }
                     return (
                       <td key={`${slot}-${i}`} className={`p-0 text-center ${leftBorder}`}>
-                        <button
-                          type="button"
+                        <AttendanceStatePicker
+                          currentState={cell.state}
                           disabled={pending}
-                          onClick={() =>
+                          accessibleLabel={`${row.name} · ${SLOT_LABEL[slot]} ${wd}요일 출결`}
+                          onSelect={(state) =>
                             startTransition(async () => {
-                              await cycleCellAction({ planId: cell.planId });
+                              await setCellStateAction({ planId: cell.planId, state });
                             })
                           }
-                          title={`${row.name} · ${SLOT_LABEL[slot]} ${wd} — ${STATE_LABEL[cell.state]} (클릭: 출석→결석→인정→미체크)`}
-                          className={`min-h-[36px] w-9 text-xs font-semibold disabled:opacity-50 ${CELL_STYLE[cell.state]}`}
-                        >
-                          {attendanceMark(cell.state)}
-                        </button>
+                          buttonClassName={`min-h-[36px] w-9 text-xs font-semibold disabled:opacity-50 ${CELL_STYLE[cell.state]}`}
+                        />
                       </td>
                     );
                   }),
@@ -181,11 +178,11 @@ export function WeekMatrix({ dates, rows }: Props) {
         ))}
         <span className="inline-flex items-center gap-1 text-slate-400">
           <span className="inline-block min-w-[1.25rem] rounded bg-slate-100 text-center font-semibold">+</span>
-          미신청 (클릭 시 출석 등록)
+          미신청 (상태 선택 시 현장 등록)
         </span>
       </div>
       <p className="text-xs text-slate-500">
-        셀을 누르면 출석(출)→결석(결)→인정(인)→미체크(○) 순으로 변경됩니다. 미신청(+) 칸을 누르면 즉시 현장 출석으로 등록됩니다.
+        셀을 한 번 누른 뒤 원하는 출결 상태를 선택하세요. 미신청(+) 칸도 상태를 선택하면 현장 참여로 등록됩니다.
       </p>
 
       {openStudent && (

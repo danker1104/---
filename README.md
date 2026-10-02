@@ -27,7 +27,7 @@ flowchart LR
 	W --> S[애플리케이션 서버]
 	A --> S
 	S --> X1[Excel 업로드 처리]
-	S --> D[(SQLite 또는 승인된 DB)]
+	S --> D[(PostgreSQL)]
 	S --> R[출결·리포트 처리]
 	X1 --> D
 	R --> D
@@ -60,7 +60,7 @@ flowchart LR
 - Excel 파일을 확인·작성할 수 있는 프로그램
 - 학교 내부망 상시 서버 또는 학교가 승인한 호스팅 환경
 
-권장 개발 스택은 TypeScript 5.x(strict), Next.js 15+(App Router), Prisma, SQLite, Tailwind CSS, shadcn/ui, zod, xlsx, Vitest, Playwright입니다. 최종 PWA·Android 배포 결정은 아직 보류되어 있습니다.
+권장 개발 스택은 TypeScript 5.x(strict), Next.js 15+(App Router), Prisma, PostgreSQL, Tailwind CSS, shadcn/ui, zod, xlsx, Vitest, Playwright입니다. 최종 PWA·Android 배포 결정은 아직 보류되어 있습니다.
 
 ## 애플리케이션 실행하기 (로컬)
 
@@ -68,9 +68,22 @@ flowchart LR
 
 ```bash
 pnpm install
-pnpm prisma migrate dev
+docker compose up -d postgres
+pnpm db:deploy
+pnpm db:seed
 pnpm dev
 ```
+
+로컬 `.env.local`에는 `.env.example`을 참고해 `DATABASE_URL`과 `DIRECT_URL`을 설정합니다. 기본 Docker 주소는 `postgresql://postgres:postgres@localhost:55432/yaja_simja?schema=public`입니다.
+
+## Vercel 배포
+
+1. Vercel 프로젝트의 Storage/Marketplace에서 **Prisma Postgres**를 생성하고 프로젝트에 연결합니다.
+2. 런타임 풀링 주소를 `DATABASE_URL`, 직접 연결 주소를 `DIRECT_URL`로 Production·Preview 환경에 설정합니다.
+3. `TEACHER_PASSCODE`, `SESSION_SECRET`, `SESSION_HOURS=12`, `TZ=Asia/Seoul`을 환경 변수로 설정합니다.
+4. 다시 배포하면 `vercel-build`가 마이그레이션, 기본 슬롯 시드, Next.js 빌드를 순서대로 실행합니다.
+
+Preview와 Production에서 같은 데이터베이스를 공유하면 미리보기 배포가 운영 스키마에 영향을 줄 수 있으므로 별도 DB 또는 별도 브랜치를 사용합니다.
 
 브라우저에서 `http://localhost:3000`에 접속합니다.
 

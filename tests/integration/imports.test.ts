@@ -87,6 +87,20 @@ describe("Excel 임포트 통합 (T-2, T-4)", () => {
     expect(await prisma.participationPlan.count()).toBe(0);
   });
 
+  it("대한민국 공식 공휴일 행은 별도 등록 없이 대상에서 자동 제외한다", async () => {
+    const file = makeExcelFile([
+      HEADER,
+      ["20260101", "김민준", "2학년 1반", "2026-10-09", "야자"],
+    ]);
+
+    const res = await uploadExcelAction(importFormData(file));
+
+    expect(res.excludedByCalendar).toBe(1);
+    expect(res.createdRows).toBe(0);
+    expect(res.errors[0]?.reason).toContain("공식 공휴일");
+    expect(res.errors[0]?.reason).toContain("한글날");
+  });
+
   it("T-4.4 임포트 결과가 AuditLog에 기록", async () => {
     const file = makeExcelFile([
       HEADER,

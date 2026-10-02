@@ -11,6 +11,7 @@ import {
   parseKstDateString,
 } from "@/lib/date";
 import { parseSlotLabel } from "@/lib/slot";
+import { getKoreanHolidaysForDatesWithCache } from "@/lib/korean-holiday-cache";
 import {
   isSurveyWorkbook,
   parseSurveyWorkbook,
@@ -298,6 +299,11 @@ async function persistParsed(args: {
   const exceptionSet = new Set(
     calendarExceptions.map((c) => formatKstDate(c.date)),
   );
+  const officialHolidays = await getKoreanHolidaysForDatesWithCache(uniqueDates);
+  const officialHolidayByDate = new Map(
+    officialHolidays.map((holiday) => [holiday.date, holiday.name]),
+  );
+  for (const holiday of officialHolidays) exceptionSet.add(holiday.date);
 
   const filtered: ParsedRow[] = [];
   let excludedByCalendar = 0;
@@ -306,7 +312,9 @@ async function persistParsed(args: {
       excludedByCalendar += 1;
       errors.push({
         row: p.row,
-        reason: `캘린더 예외일(${p.date})로 대상자 생성 제외`,
+        reason: officialHolidayByDate.has(p.date)
+          ? `공식 공휴일(${officialHolidayByDate.get(p.date)}, ${p.date})로 대상자 생성 제외`
+          : `캘린더 예외일(${p.date})로 대상자 생성 제외`,
       });
       continue;
     }

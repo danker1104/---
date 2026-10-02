@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@hangukit/holidays-core':
+        specifier: 0.1.0
+        version: 0.1.0
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.86.0(react@19.2.8))
+      '@kyungseopk1m/holidays-kr':
+        specifier: 2.1.1
+        version: 2.1.1
       '@prisma/client':
         specifier: ^6.2.1
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -595,6 +601,9 @@ packages:
   '@fast-csv/parse@4.3.6':
     resolution: {integrity: sha512-uRsLYksqpbDmWaSmzvJcuApSEe38+6NQZBUsuAyMZKqHxH0g1wcJgsKUvN3WC8tewaqFjBMMGrkHmC+T7k8LvA==}
 
+  '@hangukit/holidays-core@0.1.0':
+    resolution: {integrity: sha512-H2A/Rr5lWS+WOzhpjcldcx5Dx/FavSDJM7RUTVNxU7MDEg/y/aovxz5bwUV7mOjjGOSK/aSSWERanYV1MqGKiw==}
+
   '@hookform/resolvers@3.10.0':
     resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
     peerDependencies:
@@ -797,6 +806,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kyungseopk1m/holidays-kr@2.1.1':
+    resolution: {integrity: sha512-eJQ8RDZskWJgk4gTbwwKrbfdWORFXUteGLOg0DQ1AE3FAqRzwCSydQb8MRnXzXanorrtDn2T4pxkTPyS0QTC9Q==}
+    engines: {node: '>=18.0.0'}
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     resolution: {integrity: sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==}
@@ -3992,6 +4005,8 @@ snapshots:
       lodash.isundefined: 3.0.1
       lodash.uniq: 4.5.0
 
+  '@hangukit/holidays-core@0.1.0': {}
+
   '@hookform/resolvers@3.10.0(react-hook-form@7.86.0(react@19.2.8))':
     dependencies:
       react-hook-form: 7.86.0(react@19.2.8)
@@ -4137,6 +4152,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@kyungseopk1m/holidays-kr@2.1.1': {}
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true

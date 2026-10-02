@@ -33,8 +33,7 @@
 
 ### 데이터
 - **Prisma**: TypeScript 우선 ORM, SQLite→Postgres 이전 경로 자연스러움.
-- **DB (MVP)**: SQLite 파일 (`file:./data/app.db`), 단일 인스턴스 전제.
-- **DB (확장)**: PostgreSQL 16+ (학교 승인 후 이전 시).
+- **DB**: PostgreSQL 16+와 Prisma. Vercel 배포에서는 Marketplace의 Prisma Postgres 풀링 연결을 사용한다.
 
 ### 유틸
 - **Excel**: xlsx (Excel 읽기·쓰기). CSV는 보조 입력 형식으로만 지원.
@@ -68,8 +67,8 @@
 - 별도 프론트/백엔드 분리, GraphQL 계층 — 서버 액션으로 충분.
 
 ## 배포 토폴로지
-- **A안 (MVP 1순위)**: 학교 내부망 상시 서버에 Docker 컨테이너로 배포, HTTPS/방화벽 설정.
-- **B안 (조건부)**: 학교가 개인정보 위탁·국외 이전 여부·안전조치를 검토·승인한 뒤 승인된 클라우드 호스팅.
+- **A안**: 학교 내부망 상시 서버에 애플리케이션과 PostgreSQL을 배포, HTTPS/방화벽 설정.
+- **B안 (조건부)**: 학교 승인 후 Vercel + Prisma Postgres를 사용한다. 런타임은 풀링 URL, 마이그레이션은 직접 연결 URL을 사용한다.
 - **C안 (미채택)**: 교실 PC 로컬 실행 — 휴대폰 접속 요건과 충돌.
 
 배포 위치가 확정되기 전에는 실제 학생 정보를 투입하지 않는다.
@@ -136,7 +135,8 @@ enum CalendarReason  { HOLIDAY EXAM OTHER }
 - 후속: 카카오 알림톡 — 공식 딜러사 계약, 학교 명의 비즈니스 채널, 승인 템플릿, 수신자 처리 근거 확보 시 도입.
 
 ## 환경 변수
-- `DATABASE_URL` (예: `file:./data/app.db`)
+- `DATABASE_URL` (애플리케이션 런타임용 PostgreSQL 풀링 URL)
+- `DIRECT_URL` (Prisma 마이그레이션용 PostgreSQL 직접 연결 URL)
 - `TEACHER_PASSCODE` (최소 12자)
 - `SESSION_SECRET` (쿠키 서명용, 최소 32자)
 - `SESSION_HOURS` (기본 12)
@@ -159,12 +159,12 @@ enum CalendarReason  { HOLIDAY EXAM OTHER }
 - `public/{manifest.json,icons/*}`
 
 ## 백업/복구
-- 매일 1회 SQLite 파일 스냅샷, 최근 7일 보관.
+- PostgreSQL 제공자의 백업·복원 기능을 사용하고 복원 테스트 주기와 책임자를 정한다.
 - 학년도 종료 + 정해진 보존 기간 후 파기 스크립트 실행(스케줄 확정은 학교 기준 확보 후).
 
 ## 확장 여지 (구현 대상 아님)
 - **Android 앱**: 동일 서버 URL을 Capacitor로 감싸는 방식. Play Store 배포 시 데이터 보안 양식·개인정보처리방침 필요.
-- **Postgres 이전**: `DATABASE_URL` 변경 + `prisma migrate deploy`.
+- **Postgres 스키마 변경**: 마이그레이션 파일을 커밋하고 배포 시 `prisma migrate deploy`를 실행한다.
 - **오프라인 큐**: IndexedDB에 미전송 출결 저장 후 재접속 시 재전송.
 
 ## 운영 결정 및 후속 확장

@@ -4,8 +4,9 @@ vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
 import { prisma } from "@/lib/db";
 import { parseKstDateString } from "@/lib/date";
-import { addExceptionAction, deleteExceptionAction } from "@/app/teacher/calendar/actions";
+import { addExceptionAction, addExceptionsAction, deleteExceptionAction } from "@/app/teacher/calendar/actions";
 import { resetDb } from "./helpers";
+import { getKoreanHolidaysWithCache } from "@/lib/korean-holiday-cache";
 
 function calForm(date: string, reason: string, memo = ""): FormData {
   const fd = new FormData();
@@ -35,6 +36,48 @@ beforeEach(async () => {
 });
 
 describe("캘린더 예외 통합 (T-3)", () => {
+  it("미래 연도 공식 공휴일을 자동 저장하고 조회 실패 시 저장본을 사용한다", async () => {
+    const holidays = [{ date: "2027-01-01", name: "1월 1일" }];
+
+    const first = await getKoreanHolidaysWithCache(2027, async () => holidays);
+    const cached = await getKoreanHolidaysWithCache(2027, async () => []);
+
+    expect(first).toEqual(holidays);
+    expect(cached).toEqual(holidays);
+    expect(await prisma.calendarException.count()).toBe(1);
+    expect(await prisma.calendarException.findFirst()).toMatchObject({
+      reason: "HOLIDAY",
+      memo: "[공식 공휴일] 1월 1일",
+    });
+  });
+
+  it("공식 공휴일 자동 저장은 같은 날짜의 교사 입력을 덮어쓰지 않는다", async () => {
+    await addExceptionAction(calForm("2027-01-01", "OTHER", "학교 자체 일정"));
+
+    await getKoreanHolidaysWithCache(2027, async () => [
+      { date: "2027-01-01", name: "1월 1일" },
+    ]);
+
+    expect(await prisma.calendarException.findFirst()).toMatchObject({
+      reason: "OTHER",
+      memo: "학교 자체 일정",
+    });
+  });
+
+  it("연속 날짜를 한 번에 예외일로 등록한다", async () => {
+    const form = new FormData();
+    form.set("dates", "2026-10-20,2026-10-21,2026-10-22");
+    form.set("reason", "EXAM");
+    form.set("memo", "중간고사");
+
+    const res = await addExceptionsAction(form);
+
+    expect(res.ok).toBe(true);
+    expect(res.message).toBe("3일이 등록되었습니다.");
+    expect(await prisma.calendarException.count()).toBe(3);
+    expect(await prisma.auditLog.count({ where: { action: "CALENDAR_EXCEPTION_UPSERT" } })).toBe(3);
+  });
+
   it("T-3.4 예외일 등록 → 저장 + AuditLog, 경고 없음", async () => {
     const res = await addExceptionAction(calForm("2026-09-10", "HOLIDAY", "개교기념일"));
     expect(res.ok).toBe(true);

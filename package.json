@@ -13,7 +13,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && mkdir -p data && DATABASE_URL=\"file:./data/app.db\" prisma db push --skip-generate --accept-data-loss && DATABASE_URL=\"file:./data/app.db\" tsx prisma/seed.ts && next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && prisma db seed && next build",
     "test": "pnpm test:unit && pnpm test:integration",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
@@ -21,13 +21,20 @@
     "test:e2e": "playwright test",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "convert:survey": "tsx scripts/convert-survey.ts",
     "gen:icons": "tsx scripts/gen-icons.ts"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
+    "@hangukit/holidays-core": "0.1.0",
     "@hookform/resolvers": "^3.10.0",
+    "@kyungseopk1m/holidays-kr": "2.1.1",
     "@prisma/client": "^6.2.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

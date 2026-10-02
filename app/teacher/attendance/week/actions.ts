@@ -5,15 +5,32 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { parseKstDateString } from "@/lib/date";
 import { nextCellState } from "@/lib/weekly-attendance";
-import type { AttState, Prisma, StudySlot } from "@prisma/client";
+import type { AbsenceCategory, AttState, StudySlot } from "@prisma/client";
 
-function attendanceDataFor(state: AttState): Prisma.AttendanceUpdateInput {
+interface AttendanceStateData {
+  state: AttState;
+  checkInAt: Date | null;
+  checkOutAt: Date | null;
+  absenceCategory: AbsenceCategory | null;
+  absenceNote?: string | null;
+}
+
+function attendanceDataFor(state: AttState): AttendanceStateData {
   switch (state) {
     case "PRESENT":
+    case "LATE":
       return {
         state,
         checkInAt: new Date(),
         checkOutAt: null,
+        absenceCategory: null,
+        absenceNote: null,
+      };
+    case "LEAVE_EARLY":
+      return {
+        state,
+        checkInAt: new Date(),
+        checkOutAt: new Date(),
         absenceCategory: null,
         absenceNote: null,
       };
@@ -40,6 +57,92 @@ function attendanceDataFor(state: AttState): Prisma.AttendanceUpdateInput {
         absenceNote: null,
       };
   }
+}
+
+export interface SetCellStateInput extends CycleCellInput {
+  state: AttState;
+}
+
+const AttStateSchema = z.enum([
+  "UNCHECKED",
+  "PRESENT",
+  "LATE",
+  "LEAVE_EARLY",
+  "ABSENT",
+  "EXCUSED",
+]);
+
+export async function setCellStateAction(input: SetCellStateInput) {
+  const state = AttStateSchema.parse(input.state);
+
+  if (input.planId) {
+    const plan = await prisma.participationPlan.findUnique({
+      where: { id: input.planId },
+      include: { attendance: true },
+    });
+    if (!plan) throw new Error("대상자를 찾을 수 없습니다.");
+
+    const before = plan.attendance?.state ?? "UNCHECKED";
+    await prisma.attendance.update({
+      where: { participationPlanId: input.planId },
+      data: attendanceDataFor(state),
+    });
+    await prisma.auditLog.create({
+      data: {
+        actor: "teacher",
+        action: "WEEK_SET_STATE",
+        targetType: "Attendance",
+        targetId: input.planId,
+        meta: JSON.stringify({ before, after: state }),
+      },
+    });
+
+    revalidatePath("/teacher/attendance/week");
+    revalidatePath("/teacher/attendance");
+    return { ok: true, state, planId: input.planId };
+  }
+
+  if (input.studentNo && input.date && input.slot) {
+    const student = await prisma.student.findUnique({
+      where: { studentNo: input.studentNo },
+    });
+    if (!student) throw new Error("학생을 찾을 수 없습니다.");
+
+    const attendanceData = attendanceDataFor(state);
+    const newPlan = await prisma.participationPlan.create({
+      data: {
+        student: { connect: { id: student.id } },
+        importBatch: {
+          create: {
+            fileName: "현장추가",
+            rowCount: 1,
+            errorCount: 0,
+            actor: "teacher",
+          },
+        },
+        date: parseKstDateString(input.date),
+        slot: input.slot,
+        attendance: { create: attendanceData },
+      },
+      include: { attendance: true },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        actor: "teacher",
+        action: "WEEK_ADD_AND_SET_STATE",
+        targetType: "Attendance",
+        targetId: newPlan.id,
+        meta: JSON.stringify({ before: "NONE", after: state }),
+      },
+    });
+
+    revalidatePath("/teacher/attendance/week");
+    revalidatePath("/teacher/attendance");
+    return { ok: true, state, planId: newPlan.id };
+  }
+
+  throw new Error("잘못된 요청 파라미터입니다.");
 }
 
 export interface CycleCellInput {

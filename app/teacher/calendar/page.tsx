@@ -1,13 +1,15 @@
 import { prisma } from "@/lib/db";
-import { formatKstDate } from "@/lib/date";
+import { formatKstDate, kstTodayString } from "@/lib/date";
+import { getKoreanHolidaysWithCache } from "@/lib/korean-holiday-cache";
 import { CalendarManager, type ExceptionRow } from "./CalendarManager";
 
 export const dynamic = "force-dynamic";
 
 export default async function CalendarPage() {
-  const rows = await prisma.calendarException.findMany({
-    orderBy: { date: "desc" },
-  });
+  const today = kstTodayString();
+  const currentYear = Number(today.slice(0, 4));
+  const officialHolidays = await getKoreanHolidaysWithCache(currentYear);
+  const rows = await prisma.calendarException.findMany({ orderBy: { date: "desc" } });
   const list: ExceptionRow[] = rows.map((r) => ({
     id: r.id,
     date: formatKstDate(r.date),
@@ -22,7 +24,7 @@ export default async function CalendarPage() {
         휴일·시험일 등을 등록하면 이후 Excel 업로드에서 해당 날짜 행은 대상자로 생성되지 않습니다.
         이미 대상자가 있는 날짜를 등록하면 감사 로그에 기록되고 경고가 표시됩니다.
       </p>
-      <CalendarManager rows={list} />
+      <CalendarManager rows={list} initialHolidays={officialHolidays} initialMonth={today} />
     </div>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { addExceptionAction, deleteExceptionAction } from "./actions";
+import { useCallback, useRef, useState, useTransition } from "react";
+import { addExceptionsAction, deleteExceptionAction, getOfficialHolidaysAction } from "./actions";
 import { CALENDAR_REASON_LABEL } from "@/lib/slot";
 import type { CalendarReason } from "@prisma/client";
+import { InlineMonthCalendar } from "@/components/InlineMonthCalendar";
+import type { KoreanHoliday } from "@/lib/korean-holidays";
 
 export interface ExceptionRow {
   id: string;
@@ -12,9 +14,34 @@ export interface ExceptionRow {
   memo: string | null;
 }
 
-export function CalendarManager({ rows }: { rows: ExceptionRow[] }) {
+export function CalendarManager({
+  rows,
+  initialHolidays,
+  initialMonth,
+}: {
+  rows: ExceptionRow[];
+  initialHolidays: KoreanHoliday[];
+  initialMonth: string;
+}) {
   const [pending, startTransition] = useTransition();
+  const [, startHolidayTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [officialHolidays, setOfficialHolidays] = useState(initialHolidays);
+  const loadedYears = useRef(new Set(initialHolidays.map((holiday) => Number(holiday.date.slice(0, 4)))));
+
+  const loadOfficialHolidays = useCallback((year: number) => {
+    if (loadedYears.current.has(year)) return;
+    loadedYears.current.add(year);
+    startHolidayTransition(async () => {
+      const holidays = await getOfficialHolidaysAction(year);
+      setOfficialHolidays((current) => {
+        const merged = new Map(current.map((holiday) => [holiday.date, holiday]));
+        for (const holiday of holidays) merged.set(holiday.date, holiday);
+        return [...merged.values()];
+      });
+    });
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -24,52 +51,62 @@ export function CalendarManager({ rows }: { rows: ExceptionRow[] }) {
           const fd = new FormData(e.currentTarget);
           const form = e.currentTarget;
           startTransition(async () => {
-            const res = await addExceptionAction(fd);
+            const res = await addExceptionsAction(fd);
             setMessage(res.warning ?? res.message ?? null);
-            if (res.ok) form.reset();
+            if (res.ok) {
+              form.reset();
+              setSelectedDates([]);
+            }
           });
         }}
         className="rounded-md border bg-white p-4 shadow-sm"
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          <label className="text-sm">
-            날짜
-            <input
-              name="date"
-              type="date"
-              required
-              className="mt-1 block w-full min-h-[40px] rounded border border-slate-300 px-2 py-1"
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(18rem,24rem)_1fr]">
+          <div>
+            <span className="mb-1 block text-sm font-medium text-slate-800">날짜</span>
+            <InlineMonthCalendar
+              selectedDates={selectedDates}
+              onSelectionChange={setSelectedDates}
+              holidays={officialHolidays}
+              initialMonth={initialMonth}
+              onVisibleYearChange={loadOfficialHolidays}
             />
-          </label>
-          <label className="text-sm">
-            사유
-            <select
-              name="reason"
-              defaultValue="HOLIDAY"
-              className="mt-1 block w-full min-h-[40px] rounded border border-slate-300 px-2 py-1"
-            >
-              <option value="HOLIDAY">휴일</option>
-              <option value="EXAM">시험</option>
-              <option value="OTHER">기타</option>
-            </select>
-          </label>
-          <label className="text-sm sm:col-span-2">
-            메모(선택)
-            <input
-              name="memo"
-              type="text"
-              maxLength={200}
-              className="mt-1 block w-full min-h-[40px] rounded border border-slate-300 px-2 py-1"
-            />
-          </label>
+            <input name="dates" type="hidden" value={selectedDates.join(",")} />
+            <p className="mt-2 text-xs text-slate-500">
+              빨간 날짜는 공식 공휴일로 자동 제외됩니다. 연속 날짜는 길게 누른 뒤 드래그하세요.
+            </p>
+          </div>
+          <div className="grid content-start grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="text-sm">
+              사유
+              <select
+                name="reason"
+                defaultValue="HOLIDAY"
+                className="mt-1 block min-h-[44px] w-full rounded border border-slate-300 px-2 py-1"
+              >
+                <option value="HOLIDAY">휴일</option>
+                <option value="EXAM">시험</option>
+                <option value="OTHER">기타</option>
+              </select>
+            </label>
+            <label className="text-sm sm:col-span-2">
+              메모(선택)
+              <input
+                name="memo"
+                type="text"
+                maxLength={200}
+                className="mt-1 block min-h-[44px] w-full rounded border border-slate-300 px-2 py-1"
+              />
+            </label>
+          </div>
         </div>
         <div className="mt-3 flex justify-end">
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || selectedDates.length === 0}
             className="min-h-[40px] w-full rounded bg-slate-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 sm:w-auto"
           >
-            등록/갱신
+            {selectedDates.length > 1 ? `${selectedDates.length}일 등록/갱신` : "등록/갱신"}
           </button>
         </div>
         {message && (
