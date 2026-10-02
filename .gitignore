@@ -11,10 +11,9 @@ prisma/data/
 data/
 *.local.db
 *.db-journal
-.env
-.env.local
-.env.*.local
+.env*
 !.env.example
 .DS_Store
 *.log
 tsconfig.tsbuildinfo
+.vercel
